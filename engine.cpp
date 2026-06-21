@@ -2,9 +2,15 @@
 #include "iostream"
 
 //for user input without enter
-#include "termios.h"
+#ifdef _WIN32
+#include "conio.h"  // for Windows
+#include "thread"
+#else
+#include "termios.h" // for macOS and Linux
 #include "unistd.h"
 #include "fcntl.h"
+#endif
+
 
 
 using std::cout, std::endl;
@@ -17,7 +23,7 @@ void Engine::run () {
         input();
         update();
         render();
-        usleep(33000); // 33 millisecond buffer
+        std::this_thread::sleep_for(std::chrono::milliseconds(330)); // 33 millisecond buffer
     }
     cout << "Game Over!" << endl;
     return;
@@ -52,7 +58,11 @@ void Engine::render () {
     cout << endl;
 }
 
-bool kbhit(){
+bool isKBhit(){
+    #ifdef _WIN32
+    return _kbhit() != 0;
+
+    #else
     struct termios oldt, newt;
     int ch;
     int oldf;
@@ -75,11 +85,16 @@ bool kbhit(){
         return true;
     }
     return false;
+    #endif
 }
 
 void Engine::input (){
-    if(kbhit()){
-        char key = getchar();
+    if(isKBhit()){
+        #ifdef _WIN32
+        char key = _getch(); //get character on Windows
+        #else
+        char key = getchar(); //get character on macOS/Linux
+        #endif
         switch(key){
             case 'w': y_player--; break;
             case 'a': x_player--; break;
