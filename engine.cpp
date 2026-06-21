@@ -1,14 +1,16 @@
 #include "engine.hpp"
-#include "iostream"
+#include <iostream>
+#include <string>
+#include <thread>
+#include <chrono>
 
 //for user input without enter
 #ifdef _WIN32
-#include "conio.h"  // for Windows
-#include "thread"
+#include <conio.h> // for Windows
 #else
-#include "termios.h" // for macOS and Linux
-#include "unistd.h"
-#include "fcntl.h"
+#include <termios.h> // for macOS and Linux
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 
 
@@ -23,7 +25,7 @@ void Engine::run () {
         input();
         update();
         render();
-        std::this_thread::sleep_for(std::chrono::milliseconds(330)); // 33 millisecond buffer
+        std::this_thread::sleep_for(std::chrono::milliseconds(33)); // 33 millisecond buffer
     }
     cout << "Game Over!" << endl;
     return;
@@ -31,31 +33,32 @@ void Engine::run () {
 
 
 void Engine::render () {
-    std::cout << "\033[2J\033[1;1H";
+    std::string output = "\033[H";
 
     for (unsigned x = 0; x <= x_grid+1; x++){ //print upper border
-        cout << '-';
+        output += '-';
     }
-    cout << endl;
+    output += '\n';
 
 
     for (unsigned y = 0; y < y_grid; y++){
-        cout << '|'; //print left border
+        output += '|'; //print left border
         for (unsigned x = 0; x < x_grid; x++){ // print empty board
             if (x == x_player and y == y_player){
-                cout << '@';
+                output += '@';
             } else {
-                cout << ' ';
+                output += ' ';
             }
         }
-        cout << '|' << endl; // print right border
+        output += "|\n"; // print right border
     }
 
     
     for (unsigned x = 0; x <= x_grid+1; x++){ //print lower border
-        cout << '-';
+        output += '-';
     }
-    cout << endl;
+    output += '\n';
+    cout << output << std::flush;
 }
 
 bool isKBhit(){
