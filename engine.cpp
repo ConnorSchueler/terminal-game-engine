@@ -3,6 +3,8 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <cstdlib> // for rand() and srand()
+#include <ctime>   // for time()
 
 //for user input without enter
 #ifdef _WIN32
@@ -17,11 +19,14 @@
 
 using std::cout, std::endl;
 
-Engine::Engine() : is_running(true), x_grid(40), y_grid(20), x_player(10), y_player(10) {};
+Engine::Engine() : is_running(true), x_grid(40), y_grid(20), x_player(10), y_player(10), score(0), x_food(0), y_food(0) {
+    std::cout << "\033[2J\033[1;1H";
+    spawnFood(); // random spawn for first food position
+};
 
 
 void Engine::run () {
-    while (is_running){ //game-loop
+    while (is_running){ // game-loop
         input();
         update();
         render();
@@ -35,7 +40,7 @@ void Engine::run () {
 void Engine::render () {
     std::string output = "\033[H";
 
-    for (unsigned x = 0; x <= x_grid+1; x++){ //print upper border
+    for (unsigned x = 0; x <= x_grid+1; x++){ // print upper border
         output += '-';
     }
     output += '\n';
@@ -43,23 +48,27 @@ void Engine::render () {
 
     for (unsigned y = 0; y < y_grid; y++){
         output += '|'; //print left border
-        for (unsigned x = 0; x < x_grid; x++){ // print empty board
+        for (unsigned x = 0; x < x_grid; x++){ 
             if (x == x_player and y == y_player){
-                output += '@';
+                output += '@'; // print player
+            } else if (x==x_food and y==y_food){
+                output += 'o'; // print food
             } else {
-                output += ' ';
+                output += ' '; // print empty board
             }
         }
         output += "|\n"; // print right border
     }
 
     
-    for (unsigned x = 0; x <= x_grid+1; x++){ //print lower border
+    for (unsigned x = 0; x <= x_grid+1; x++){ // print lower border
         output += '-';
     }
     output += '\n';
+    output += "Score: " + std::to_string(score) + "\n";
     cout << output << std::flush;
 }
+
 
 bool isKBhit(){
     #ifdef _WIN32
@@ -69,7 +78,7 @@ bool isKBhit(){
     struct termios oldt, newt;
     int ch;
     int oldf;
-    tcgetattr(STDIN_FILENO, &oldt); //old terminal settings
+    tcgetattr(STDIN_FILENO, &oldt); // old terminal settings
     newt=oldt;
     
     newt.c_lflag &= ~(ICANON | ECHO);
@@ -80,7 +89,7 @@ bool isKBhit(){
 
     ch=getchar();
 
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); //restore old terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // restore old terminal settings
     fcntl(STDIN_FILENO, F_SETFL, oldf);
 
     if (ch != EOF){
@@ -91,12 +100,13 @@ bool isKBhit(){
     #endif
 }
 
+
 void Engine::input (){
     if(isKBhit()){
         #ifdef _WIN32
-        char key = _getch(); //get character on Windows
+        char key = _getch(); // get character on Windows
         #else
-        char key = getchar(); //get character on macOS/Linux
+        char key = getchar(); // get character on macOS/Linux
         #endif
         switch(key){
             case 'w': y_player--; break;
@@ -109,10 +119,25 @@ void Engine::input (){
 }
 
 
-
-void Engine::update (){
+void Engine::update (){ 
+    // don't let player go out of map
     if (x_player<0){x_player=0;}
     if (y_player<0){y_player=0;}
     if (x_player>=x_grid){x_player=x_grid-1;}
     if (y_player>=y_grid){y_player=y_grid-1;}
+    
+    // check if player reached food
+    if (x_player == x_food and y_player == y_food){
+        score+=100;
+        spawnFood();
+    }
+}
+
+
+void Engine::spawnFood (){ // update food coordinates
+    srand(time(0));
+    do{
+    x_food = rand()%(x_grid-1) + 1;
+    y_food = rand()%(y_grid-1) + 1;
+    } while (x_food==x_player and y_food == y_player);
 }

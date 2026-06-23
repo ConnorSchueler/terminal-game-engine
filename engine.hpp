@@ -8,10 +8,14 @@ class Engine{
         int y_grid;
         int x_player;
         int y_player;
+        int score;
+        int x_food;
+        int y_food;
 
         void render();
         void input();
         void update();
+        void spawnFood();
 
 
     public:
