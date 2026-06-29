@@ -2,7 +2,7 @@
 #define ENGINE_HPP
 
 class Engine{
-    private:
+    protected:
         bool is_running;
         int x_grid;
         int y_grid;
@@ -12,14 +12,16 @@ class Engine{
         int x_food;
         int y_food;
 
-        void render();
-        void input();
-        void update();
+        virtual void render();
+        virtual void input();
+        virtual void update();
         void spawnFood();
 
 
     public:
         Engine ();
+        virtual ~Engine();
+
         void run();
 };
 

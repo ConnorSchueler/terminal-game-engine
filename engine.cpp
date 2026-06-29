@@ -24,6 +24,8 @@ Engine::Engine() : is_running(true), x_grid(40), y_grid(20), x_player(10), y_pla
     spawnFood(); // random spawn for first food position
 };
 
+Engine::~Engine() {} // default destructor
+
 
 void Engine::run () {
     while (is_running){ // game-loop
